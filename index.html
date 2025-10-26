@@ -1,0 +1,1317 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>正余弦函数与单位圆可视化</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .nav-menu {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+        }
+        
+        .nav-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+        
+        .nav-button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            background: #667eea;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1em;
+        }
+        
+        .nav-button:hover {
+            background: #5a6fd8;
+            transform: translateY(-2px);
+        }
+        
+        .nav-button.active {
+            background: #4a5fcf;
+            box-shadow: 0 4px 12px rgba(74, 95, 207, 0.3);
+        }
+        
+        .page {
+            display: none;
+        }
+        
+        .page.active {
+            display: block;
+        }
+        
+        .controls {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+        }
+        
+        .chart-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(600px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .function-container {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 20px;
+            align-items: center;
+        }
+        
+        .unit-circle {
+            height: 300px;
+            width: 100%;
+            border-right: 2px solid #eee;
+            padding-right: 20px;
+        }
+        
+        .function-chart {
+            height: 350px;
+            width: 100%;
+        }
+        
+        .chart-container {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .chart-container:hover {
+            transform: translateY(-5px);
+        }
+        
+        .chart-title {
+            font-size: 1.3em;
+            margin-bottom: 15px;
+            color: #4a4a4a;
+            border-left: 4px solid #667eea;
+            padding-left: 10px;
+        }
+        
+        .chart {
+            height: 400px;
+            width: 100%;
+        }
+        
+        .data-editor {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-left: 20px;
+            min-width: 300px;
+        }
+        
+        .editor-container {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 20px;
+            align-items: start;
+        }
+        
+        .editor-title {
+            font-size: 1.2em;
+            margin-bottom: 15px;
+            color: #333;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 5px;
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+        }
+        
+        .data-table th, .data-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        
+        .data-table th {
+            background-color: #f2f2f2;
+        }
+        
+        .data-input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+        
+        .update-button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+        }
+        
+        .update-button:hover {
+            background: #5a6fd8;
+        }
+        
+        .slider-container {
+            margin: 15px 0;
+        }
+        
+        .slider-label {
+            display: flex;
+            justify-content: between;
+            margin-bottom: 5px;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            margin: 10px 0;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background: #667eea;
+            color: white;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        
+        button:hover {
+            background: #5a6fd8;
+        }
+        
+        .info-panel {
+            background: rgba(255,255,255,0.95);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 第三章的可视化网页</h1>
+            <p>基于第3章.ipynb的数据可视化交互演示</p>
+        </div>
+        
+        <!-- 导航菜单 -->
+        <div class="nav-menu">
+            <h3>选择可视化图表</h3>
+            <div class="nav-buttons">
+                <button class="nav-button active" onclick="showPage('trigonometry')">正余弦函数</button>
+                <button class="nav-button" onclick="showPage('movie')">电影票房排行榜</button>
+                <button class="nav-button" onclick="showPage('alipay')">支付宝月账单</button>
+                <button class="nav-button" onclick="showPage('english')">英语成绩评估</button>
+                <button class="nav-button" onclick="showPage('bread')">面包配料比例</button>
+            </div>
+        </div>
+
+        <!-- 正余弦函数页面 -->
+        <div id="trigonometry" class="page active">
+            <div class="controls">
+                <h3>正余弦函数交互控制</h3>
+                <div class="slider-container">
+                    <div class="slider-label">
+                        <span>当前角度: </span>
+                        <span id="angleValue">0°</span>
+                    </div>
+                    <input type="range" id="angle" min="0" max="360" value="0" step="1">
+                </div>
+                <div class="button-group">
+                    <button onclick="animateSine()">正弦动画</button>
+                    <button onclick="animateCosine()">余弦动画</button>
+                    <button onclick="resetComparison()">重置视图</button>
+                </div>
+            </div>
+            
+            <div class="chart-grid">
+                <!-- 正弦函数与单位圆 -->
+                <div class="chart-container">
+                    <div class="chart-title">正弦函数与单位圆</div>
+                    <div class="function-container">
+                        <div id="sineUnitCircle" class="unit-circle"></div>
+                        <div id="sineFunctionChart" class="function-chart"></div>
+                    </div>
+                    <div class="button-group">
+                        <button onclick="toggleSineMaxMin()">切换极值点</button>
+                        <button onclick="animateSine()">正弦动画</button>
+                    </div>
+                </div>
+                
+                <!-- 余弦函数与单位圆 -->
+                <div class="chart-container">
+                    <div class="chart-title">余弦函数与单位圆</div>
+                    <div class="function-container">
+                        <div id="cosineUnitCircle" class="unit-circle"></div>
+                        <div id="cosineFunctionChart" class="function-chart"></div>
+                    </div>
+                    <div class="button-group">
+                        <button onclick="toggleCosineMaxMin()">切换极值点</button>
+                        <button onclick="animateCosine()">余弦动画</button>
+                    </div>
+                </div>
+                
+                <!-- 正余弦函数对比 -->
+                <div class="chart-container">
+                    <div class="chart-title">正余弦函数对比</div>
+                    <div id="comparisonChart" class="chart"></div>
+                    <div class="button-group">
+                        <button onclick="toggleSineComparison()">切换正弦</button>
+                        <button onclick="toggleCosineComparison()">切换余弦</button>
+                        <button onclick="resetComparison()">重置视图</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 电影票房排行榜页面 -->
+        <div id="movie" class="page">
+            <div class="editor-container">
+                <div class="chart-container">
+                    <div class="chart-title">2019年内地电影票房排行榜</div>
+                    <div id="movieChart" class="chart"></div>
+                </div>
+                <div class="data-editor">
+                    <div class="editor-title">数据编辑区域</div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>电影名称</th>
+                                <th>票房(亿元)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="movieDataTable">
+                            <!-- 数据将通过JavaScript动态生成 -->
+                        </tbody>
+                    </table>
+                    <div>
+                        <input type="text" class="data-input" id="newMovieName" placeholder="新电影名称">
+                        <input type="number" class="data-input" id="newMovieBoxOffice" placeholder="票房(亿元)" step="0.01">
+                        <button class="update-button" onclick="updateMovieData()">更新数据</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 支付宝月账单页面 -->
+        <div id="alipay" class="page">
+            <div class="editor-container">
+                <div class="chart-container">
+                    <div class="chart-title">支付宝月账单报告</div>
+                    <div id="alipayChart" class="chart"></div>
+                </div>
+                <div class="data-editor">
+                    <div class="editor-title">数据编辑区域</div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>消费类别</th>
+                                <th>百分比(%)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="alipayDataTable">
+                            <!-- 数据将通过JavaScript动态生成 -->
+                        </tbody>
+                    </table>
+                    <div>
+                        <input type="text" class="data-input" id="newAlipayCategory" placeholder="新消费类别">
+                        <input type="number" class="data-input" id="newAlipayPercent" placeholder="百分比(%)" step="0.1" min="0" max="100">
+                        <button class="update-button" onclick="updateAlipayData()">更新数据</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 英语成绩评估页面 -->
+        <div id="english" class="page">
+            <div class="editor-container">
+                <div class="chart-container">
+                    <div class="chart-title">全校高二年级各班男女生英语成绩评估</div>
+                    <div id="englishScoreChart" class="chart"></div>
+                </div>
+                <div class="data-editor">
+                    <div class="editor-title">数据编辑区域</div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>班级</th>
+                                <th>男生平均分</th>
+                                <th>女生平均分</th>
+                            </tr>
+                        </thead>
+                        <tbody id="englishDataTable">
+                            <!-- 数据将通过JavaScript动态生成 -->
+                        </tbody>
+                    </table>
+                    <div>
+                        <input type="text" class="data-input" id="newEnglishClass" placeholder="新班级名称">
+                        <input type="number" class="data-input" id="newEnglishMale" placeholder="男生平均分" step="0.1">
+                        <input type="number" class="data-input" id="newEnglishFemale" placeholder="女生平均分" step="0.1">
+                        <button class="update-button" onclick="updateEnglishData()">更新数据</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 面包配料比例页面 -->
+        <div id="bread" class="page">
+            <div class="editor-container">
+                <div class="chart-container">
+                    <div class="chart-title">果酱面包配料比例</div>
+                    <div id="breadChart" class="chart"></div>
+                </div>
+                <div class="data-editor">
+                    <div class="editor-title">数据编辑区域</div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>配料名称</th>
+                                <th>重量(g)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="breadDataTable">
+                            <!-- 数据将通过JavaScript动态生成 -->
+                        </tbody>
+                    </table>
+                    <div>
+                        <input type="text" class="data-input" id="newBreadIngredient" placeholder="新配料名称">
+                        <input type="number" class="data-input" id="newBreadWeight" placeholder="重量(g)" step="1">
+                        <button class="update-button" onclick="updateBreadData()">更新数据</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+
+    </div>
+
+    <script>
+        // 全局变量
+        let currentAngle = 0; // 当前角度（度）
+        let sineAnimationId = null;
+        let cosineAnimationId = null;
+        let showSineMaxMin = false;
+        let showCosineMaxMin = false;
+        let showSineComparison = true;
+        let showCosineComparison = true;
+
+        // 角度转弧度
+        function degToRad(deg) {
+            return deg * Math.PI / 180;
+        }
+
+        // 初始化所有图表
+        function initCharts() {
+            createSineUnitCircle();
+            createSineFunctionChart();
+            createCosineUnitCircle();
+            createCosineFunctionChart();
+            createComparisonChart();
+            createMovieChart();
+            createAlipayChart();
+            createEnglishScoreChart();
+            createBreadChart();
+        }
+
+        // 创建正弦函数单位圆
+        function createSineUnitCircle() {
+            const rad = degToRad(currentAngle);
+            const cosValue = Math.cos(rad);
+            const sinValue = Math.sin(rad);
+            
+            // 单位圆
+            const circleX = [];
+            const circleY = [];
+            for (let i = 0; i <= 360; i++) {
+                const angle = degToRad(i);
+                circleX.push(Math.cos(angle));
+                circleY.push(Math.sin(angle));
+            }
+            
+            const traces = [
+                {
+                    x: circleX,
+                    y: circleY,
+                    mode: 'lines',
+                    name: '单位圆',
+                    line: { color: '#333', width: 2 }
+                },
+                {
+                    x: [0, cosValue],
+                    y: [0, sinValue],
+                    mode: 'lines',
+                    name: '半径',
+                    line: { color: '#ff6b6b', width: 3 }
+                },
+                {
+                    x: [cosValue],
+                    y: [sinValue],
+                    mode: 'markers',
+                    name: '动点P',
+                    marker: { size: 12, color: '#ff6b6b' }
+                },
+                {
+                    x: [cosValue, cosValue],
+                    y: [0, sinValue],
+                    mode: 'lines',
+                    name: '垂直线',
+                    line: { color: '#ff6b6b', width: 2, dash: 'dash' }
+                }
+            ];
+            
+            // 添加坐标轴
+            traces.push({
+                x: [-1.2, 1.2],
+                y: [0, 0],
+                mode: 'lines',
+                name: 'x轴',
+                line: { color: '#666', width: 1 }
+            });
+            
+            traces.push({
+                x: [0, 0],
+                y: [-1.2, 1.2],
+                mode: 'lines',
+                name: 'y轴',
+                line: { color: '#666', width: 1 }
+            });
+            
+            const layout = {
+                title: '单位圆 - 正弦函数',
+                xaxis: { 
+                    title: 'x = cos(θ)',
+                    range: [-1.2, 1.2],
+                    scaleanchor: 'y',
+                    scaleratio: 1
+                },
+                yaxis: { 
+                    title: 'y = sin(θ)',
+                    range: [-1.2, 1.2]
+                },
+                showlegend: false,
+                annotations: [
+                    {
+                        x: cosValue,
+                        y: sinValue,
+                        text: `sin(θ) = ${sinValue.toFixed(2)}`,
+                        showarrow: true,
+                        arrowhead: 2,
+                        ax: 20,
+                        ay: -20
+                    }
+                ]
+            };
+            
+            Plotly.newPlot('sineUnitCircle', traces, layout, { responsive: true });
+        }
+
+        // 创建正弦函数曲线
+        function createSineFunctionChart() {
+            const x = [];
+            const y = [];
+            const currentX = degToRad(currentAngle);
+            const currentY = Math.sin(currentX);
+            
+            // 生成正弦曲线数据（简化范围）
+            for (let i = 0; i <= 720; i += 10) {
+                const rad = degToRad(i);
+                x.push(rad);
+                y.push(Math.sin(rad));
+            }
+            
+            const traces = [
+                {
+                    x: x,
+                    y: y,
+                    mode: 'lines',
+                    name: '正弦曲线',
+                    line: { color: '#ff6b6b', width: 3 }
+                },
+                {
+                    x: [currentX],
+                    y: [currentY],
+                    mode: 'markers',
+                    name: '当前点',
+                    marker: { size: 10, color: '#ff0000' }
+                }
+            ];
+            
+            // 添加极值点标注
+            if (showSineMaxMin) {
+                const maxMinPoints = [
+                    { x: degToRad(90), y: 1, text: '最大值' },
+                    { x: degToRad(270), y: -1, text: '最小值' }
+                ];
+                
+                maxMinPoints.forEach(point => {
+                    traces.push({
+                        x: [point.x],
+                        y: [point.y],
+                        mode: 'markers+text',
+                        name: point.text,
+                        marker: { size: 8, color: '#ff0000' },
+                        text: [point.text],
+                        textposition: 'top center'
+                    });
+                });
+            }
+            
+            const layout = {
+                title: '正弦函数 y = sin(x)',
+                xaxis: { 
+                    title: '角度 x (弧度)',
+                    range: [0, degToRad(720)],
+                    tickvals: [0, Math.PI/2, Math.PI, 3*Math.PI/2, 2*Math.PI, 5*Math.PI/2, 3*Math.PI, 7*Math.PI/2, 4*Math.PI],
+                    ticktext: ['0', 'π/2', 'π', '3π/2', '2π', '5π/2', '3π', '7π/2', '4π']
+                },
+                yaxis: { 
+                    title: 'y = sin(x)',
+                    range: [-1.5, 1.5]
+                },
+                showlegend: false,
+                margin: { t: 50, r: 30, b: 60, l: 60 }
+            };
+            
+            Plotly.newPlot('sineFunctionChart', traces, layout, { responsive: true });
+        }
+
+        // 创建余弦函数单位圆
+        function createCosineUnitCircle() {
+            const rad = degToRad(currentAngle);
+            const cosValue = Math.cos(rad);
+            const sinValue = Math.sin(rad);
+            
+            // 单位圆
+            const circleX = [];
+            const circleY = [];
+            for (let i = 0; i <= 360; i++) {
+                const angle = degToRad(i);
+                circleX.push(Math.cos(angle));
+                circleY.push(Math.sin(angle));
+            }
+            
+            const traces = [
+                {
+                    x: circleX,
+                    y: circleY,
+                    mode: 'lines',
+                    name: '单位圆',
+                    line: { color: '#333', width: 2 }
+                },
+                {
+                    x: [0, cosValue],
+                    y: [0, sinValue],
+                    mode: 'lines',
+                    name: '半径',
+                    line: { color: '#4ecdc4', width: 3 }
+                },
+                {
+                    x: [cosValue],
+                    y: [sinValue],
+                    mode: 'markers',
+                    name: '动点P',
+                    marker: { size: 12, color: '#4ecdc4' }
+                },
+                {
+                    x: [0, cosValue],
+                    y: [0, 0],
+                    mode: 'lines',
+                    name: '水平线',
+                    line: { color: '#4ecdc4', width: 2, dash: 'dash' }
+                }
+            ];
+            
+            // 添加坐标轴
+            traces.push({
+                x: [-1.2, 1.2],
+                y: [0, 0],
+                mode: 'lines',
+                name: 'x轴',
+                line: { color: '#666', width: 1 }
+            });
+            
+            traces.push({
+                x: [0, 0],
+                y: [-1.2, 1.2],
+                mode: 'lines',
+                name: 'y轴',
+                line: { color: '#666', width: 1 }
+            });
+            
+            const layout = {
+                title: '单位圆 - 余弦函数',
+                xaxis: { 
+                    title: 'x = cos(θ)',
+                    range: [-1.2, 1.2],
+                    scaleanchor: 'y',
+                    scaleratio: 1
+                },
+                yaxis: { 
+                    title: 'y = sin(θ)',
+                    range: [-1.2, 1.2]
+                },
+                showlegend: false,
+                annotations: [
+                    {
+                        x: cosValue,
+                        y: sinValue,
+                        text: `cos(θ) = ${cosValue.toFixed(2)}`,
+                        showarrow: true,
+                        arrowhead: 2,
+                        ax: 20,
+                        ay: -20
+                    }
+                ]
+            };
+            
+            Plotly.newPlot('cosineUnitCircle', traces, layout, { responsive: true });
+        }
+
+        // 创建余弦函数曲线
+        function createCosineFunctionChart() {
+            const x = [];
+            const y = [];
+            const currentX = degToRad(currentAngle);
+            const currentY = Math.cos(currentX);
+            
+            // 生成余弦曲线数据（简化范围）
+            for (let i = 0; i <= 720; i += 10) {
+                const rad = degToRad(i);
+                x.push(rad);
+                y.push(Math.cos(rad));
+            }
+            
+            const traces = [
+                {
+                    x: x,
+                    y: y,
+                    mode: 'lines',
+                    name: '余弦曲线',
+                    line: { color: '#4ecdc4', width: 3 }
+                },
+                {
+                    x: [currentX],
+                    y: [currentY],
+                    mode: 'markers',
+                    name: '当前点',
+                    marker: { size: 10, color: '#00ff00' }
+                }
+            ];
+            
+            // 添加极值点标注
+            if (showCosineMaxMin) {
+                const maxMinPoints = [
+                    { x: degToRad(0), y: 1, text: '最大值' },
+                    { x: degToRad(180), y: -1, text: '最小值' }
+                ];
+                
+                maxMinPoints.forEach(point => {
+                    traces.push({
+                        x: [point.x],
+                        y: [point.y],
+                        mode: 'markers+text',
+                        name: point.text,
+                        marker: { size: 8, color: '#00ff00' },
+                        text: [point.text],
+                        textposition: 'top center'
+                    });
+                });
+            }
+            
+            const layout = {
+                title: '余弦函数 y = cos(x)',
+                xaxis: { 
+                    title: '角度 x (弧度)',
+                    range: [0, degToRad(720)],
+                    tickvals: [0, Math.PI/2, Math.PI, 3*Math.PI/2, 2*Math.PI, 5*Math.PI/2, 3*Math.PI, 7*Math.PI/2, 4*Math.PI],
+                    ticktext: ['0', 'π/2', 'π', '3π/2', '2π', '5π/2', '3π', '7π/2', '4π']
+                },
+                yaxis: { 
+                    title: 'y = cos(x)',
+                    range: [-1.5, 1.5]
+                },
+                showlegend: false,
+                margin: { t: 50, r: 30, b: 60, l: 60 }
+            };
+            
+            Plotly.newPlot('cosineFunctionChart', traces, layout, { responsive: true });
+        }
+
+        // 创建对比图表
+        function createComparisonChart() {
+            const x = [];
+            const sineY = [];
+            const cosineY = [];
+            const currentX = degToRad(currentAngle);
+            
+            // 生成数据（简化范围）
+            for (let i = 0; i <= 720; i += 10) {
+                const rad = degToRad(i);
+                x.push(rad);
+                sineY.push(Math.sin(rad));
+                cosineY.push(Math.cos(rad));
+            }
+            
+            const traces = [];
+            
+            if (showSineComparison) {
+                traces.push({
+                    x: x,
+                    y: sineY,
+                    mode: 'lines',
+                    name: '正弦曲线',
+                    line: { color: '#ff6b6b', width: 3 }
+                });
+            }
+            
+            if (showCosineComparison) {
+                traces.push({
+                    x: x,
+                    y: cosineY,
+                    mode: 'lines',
+                    name: '余弦曲线',
+                    line: { color: '#4ecdc4', width: 3 }
+                });
+            }
+            
+            const layout = {
+                title: '正余弦函数对比',
+                xaxis: { 
+                    title: '角度 x (弧度)',
+                    range: [0, degToRad(720)],
+                    tickvals: [0, Math.PI/2, Math.PI, 3*Math.PI/2, 2*Math.PI, 5*Math.PI/2, 3*Math.PI, 7*Math.PI/2, 4*Math.PI],
+                    ticktext: ['0', 'π/2', 'π', '3π/2', '2π', '5π/2', '3π', '7π/2', '4π']
+                },
+                yaxis: { 
+                    title: '函数值',
+                    range: [-1.5, 1.5]
+                },
+                showlegend: true,
+                margin: { t: 50, r: 30, b: 60, l: 60 }
+            };
+            
+            Plotly.newPlot('comparisonChart', traces, layout, { responsive: true });
+        }
+
+        // 电影票房排行榜
+        function createMovieChart() {
+            const labels = ["哪吒之魔童降世", "流浪地球", "复仇者联盟4", "疯狂的外星人", "飞驰人生"];
+            const boxOffice = [48.57, 46.18, 42.05, 21.83, 17.03];
+            
+            const trace = {
+                x: boxOffice,
+                y: labels,
+                type: 'bar',
+                orientation: 'h',
+                marker: {
+                    color: 'rgba(255,107,107,0.6)',
+                    line: {
+                        color: 'rgba(255,107,107,1.0)',
+                        width: 1
+                    }
+                }
+            };
+            
+            const layout = {
+                title: '2019年内地电影票房排行榜 (前5名)',
+                xaxis: { title: '总票房(亿元)' },
+                yaxis: { title: '电影名称' },
+                margin: { l: 150 }
+            };
+            
+            Plotly.newPlot('movieChart', [trace], layout, { responsive: true });
+        }
+
+        // 支付宝月账单
+        function createAlipayChart() {
+            const categories = ['购物', '人情往来', '餐饮美食', '通信物流', '生活日用', '交通出行', '休闲娱乐', '其他'];
+            const percentages = [26.7, 3.3, 33.3, 6.7, 10.0, 6.7, 6.7, 6.7];
+            
+            const trace = {
+                values: percentages,
+                labels: categories,
+                type: 'pie',
+                hole: 0.4,
+                marker: {
+                    colors: ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#feca57', '#ff9ff3', '#54a0ff', '#5f27cd']
+                }
+            };
+            
+            const layout = {
+                title: '支付宝月账单报告',
+                showlegend: true
+            };
+            
+            Plotly.newPlot('alipayChart', [trace], layout, { responsive: true });
+        }
+
+        // 全校高二年级各班男女生英语成绩评估
+        function createEnglishScoreChart() {
+            const classes = ['高二1班', '高二2班', '高二3班', '高二4班', '高二5班', '高二6班'];
+            const menMeans = [90.5, 89.5, 88.7, 88.5, 85.2, 86.6];
+            const womenMeans = [92.7, 87.0, 90.5, 85.0, 89.5, 89.8];
+            
+            const trace1 = {
+                x: classes,
+                y: menMeans,
+                name: '男生平均成绩',
+                type: 'bar',
+                marker: { color: '#4ecdc4' }
+            };
+            
+            const trace2 = {
+                x: classes,
+                y: womenMeans,
+                name: '女生平均成绩',
+                type: 'bar',
+                marker: { color: '#ff6b6b' }
+            };
+            
+            const layout = {
+                title: '高二各班男生、女生英语平均成绩',
+                xaxis: { title: '班级' },
+                yaxis: { title: '分数' },
+                barmode: 'group'
+            };
+            
+            Plotly.newPlot('englishScoreChart', [trace1, trace2], layout, { responsive: true });
+        }
+
+        // 果酱面包配料比例
+        function createBreadChart() {
+            const kinds = ['面粉', '全麦粉', '酵母', '苹果酱', '鸡蛋', '黄油', '盐', '白糖'];
+            const weight = [250, 150, 4, 250, 50, 30, 4, 20];
+            
+            const trace = {
+                values: weight,
+                labels: kinds,
+                type: 'pie',
+                hole: 0.3,
+                marker: {
+                    colors: ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#feca57', '#ff9ff3', '#54a0ff', '#5f27cd']
+                }
+            };
+            
+            const layout = {
+                title: '果酱面包配料比例',
+                showlegend: true
+            };
+            
+            Plotly.newPlot('breadChart', [trace], layout, { responsive: true });
+            
+            // 初始化面包数据表格
+            updateBreadDataTable(kinds, weight);
+        }
+
+        // 数据编辑功能
+        // 电影票房数据编辑
+        function updateMovieDataTable(labels, boxOffice) {
+            const table = document.getElementById('movieDataTable');
+            table.innerHTML = '';
+            
+            labels.forEach((label, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${label}</td>
+                    <td>${boxOffice[index]}</td>
+                `;
+                table.appendChild(row);
+            });
+        }
+
+        function updateMovieData() {
+            const newName = document.getElementById('newMovieName').value;
+            const newBoxOffice = parseFloat(document.getElementById('newMovieBoxOffice').value);
+            
+            if (newName && !isNaN(newBoxOffice)) {
+                // 这里应该更新图表数据，但需要重新设计数据结构
+                alert('数据已更新！需要重新加载页面查看效果。');
+                document.getElementById('newMovieName').value = '';
+                document.getElementById('newMovieBoxOffice').value = '';
+            } else {
+                alert('请输入有效的电影名称和票房数据！');
+            }
+        }
+
+        // 支付宝数据编辑
+        function updateAlipayDataTable(categories, percentages) {
+            const table = document.getElementById('alipayDataTable');
+            table.innerHTML = '';
+            
+            categories.forEach((category, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${category}</td>
+                    <td>${percentages[index]}</td>
+                `;
+                table.appendChild(row);
+            });
+        }
+
+        function updateAlipayData() {
+            const newCategory = document.getElementById('newAlipayCategory').value;
+            const newPercent = parseFloat(document.getElementById('newAlipayPercent').value);
+            
+            if (newCategory && !isNaN(newPercent)) {
+                alert('数据已更新！需要重新加载页面查看效果。');
+                document.getElementById('newAlipayCategory').value = '';
+                document.getElementById('newAlipayPercent').value = '';
+            } else {
+                alert('请输入有效的消费类别和百分比数据！');
+            }
+        }
+
+        // 英语成绩数据编辑
+        function updateEnglishDataTable(classes, menMeans, womenMeans) {
+            const table = document.getElementById('englishDataTable');
+            table.innerHTML = '';
+            
+            classes.forEach((className, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${className}</td>
+                    <td>${menMeans[index]}</td>
+                    <td>${womenMeans[index]}</td>
+                `;
+                table.appendChild(row);
+            });
+        }
+
+        function updateEnglishData() {
+            const newClass = document.getElementById('newEnglishClass').value;
+            const newMale = parseFloat(document.getElementById('newEnglishMale').value);
+            const newFemale = parseFloat(document.getElementById('newEnglishFemale').value);
+            
+            if (newClass && !isNaN(newMale) && !isNaN(newFemale)) {
+                alert('数据已更新！需要重新加载页面查看效果。');
+                document.getElementById('newEnglishClass').value = '';
+                document.getElementById('newEnglishMale').value = '';
+                document.getElementById('newEnglishFemale').value = '';
+            } else {
+                alert('请输入有效的班级名称和成绩数据！');
+            }
+        }
+
+        // 面包配料数据编辑
+        function updateBreadDataTable(kinds, weight) {
+            const table = document.getElementById('breadDataTable');
+            table.innerHTML = '';
+            
+            kinds.forEach((kind, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${kind}</td>
+                    <td>${weight[index]}</td>
+                `;
+                table.appendChild(row);
+            });
+        }
+
+        function updateBreadData() {
+            const newIngredient = document.getElementById('newBreadIngredient').value;
+            const newWeight = parseFloat(document.getElementById('newBreadWeight').value);
+            
+            if (newIngredient && !isNaN(newWeight)) {
+                alert('数据已更新！需要重新加载页面查看效果。');
+                document.getElementById('newBreadIngredient').value = '';
+                document.getElementById('newBreadWeight').value = '';
+            } else {
+                alert('请输入有效的配料名称和重量数据！');
+            }
+        }
+
+        // 更新图表创建函数以包含数据表格初始化
+        function createMovieChart() {
+            const labels = ["哪吒之魔童降世", "流浪地球", "复仇者联盟4", "疯狂的外星人", "飞驰人生"];
+            const boxOffice = [48.57, 46.18, 42.05, 21.83, 17.03];
+            
+            const trace = {
+                x: boxOffice,
+                y: labels,
+                type: 'bar',
+                orientation: 'h',
+                marker: {
+                    color: 'rgba(255,107,107,0.6)',
+                    line: {
+                        color: 'rgba(255,107,107,1.0)',
+                        width: 1
+                    }
+                }
+            };
+            
+            const layout = {
+                title: '2019年内地电影票房排行榜 (前5名)',
+                xaxis: { title: '总票房(亿元)' },
+                yaxis: { title: '电影名称' },
+                margin: { l: 150 }
+            };
+            
+            Plotly.newPlot('movieChart', [trace], layout, { responsive: true });
+            
+            // 初始化电影数据表格
+            updateMovieDataTable(labels, boxOffice);
+        }
+
+        function createAlipayChart() {
+            const categories = ['购物', '人情往来', '餐饮美食', '通信物流', '生活日用', '交通出行', '休闲娱乐', '其他'];
+            const percentages = [26.7, 3.3, 33.3, 6.7, 10.0, 6.7, 6.7, 6.7];
+            
+            const trace = {
+                values: percentages,
+                labels: categories,
+                type: 'pie',
+                hole: 0.4,
+                marker: {
+                    colors: ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#feca57', '#ff9ff3', '#54a0ff', '#5f27cd']
+                }
+            };
+            
+            const layout = {
+                title: '支付宝月账单报告',
+                showlegend: true
+            };
+            
+            Plotly.newPlot('alipayChart', [trace], layout, { responsive: true });
+            
+            // 初始化支付宝数据表格
+            updateAlipayDataTable(categories, percentages);
+        }
+
+        function createEnglishScoreChart() {
+            const classes = ['高二1班', '高二2班', '高二3班', '高二4班', '高二5班', '高二6班'];
+            const menMeans = [90.5, 89.5, 88.7, 88.5, 85.2, 86.6];
+            const womenMeans = [92.7, 87.0, 90.5, 85.0, 89.5, 89.8];
+            
+            const trace1 = {
+                x: classes,
+                y: menMeans,
+                name: '男生平均成绩',
+                type: 'bar',
+                marker: { color: '#4ecdc4' }
+            };
+            
+            const trace2 = {
+                x: classes,
+                y: womenMeans,
+                name: '女生平均成绩',
+                type: 'bar',
+                marker: { color: '#ff6b6b' }
+            };
+            
+            const layout = {
+                title: '高二各班男生、女生英语平均成绩',
+                xaxis: { title: '班级' },
+                yaxis: { title: '分数' },
+                barmode: 'group'
+            };
+            
+            Plotly.newPlot('englishScoreChart', [trace1, trace2], layout, { responsive: true });
+            
+            // 初始化英语成绩数据表格
+            updateEnglishDataTable(classes, menMeans, womenMeans);
+        }
+
+        // 交互功能
+        function toggleSineMaxMin() {
+            showSineMaxMin = !showSineMaxMin;
+            createSineFunctionChart();
+        }
+
+        function toggleCosineMaxMin() {
+            showCosineMaxMin = !showCosineMaxMin;
+            createCosineFunctionChart();
+        }
+
+        function animateSine() {
+            if (sineAnimationId) {
+                cancelAnimationFrame(sineAnimationId);
+                sineAnimationId = null;
+                return;
+            }
+            
+            function animate() {
+                currentAngle = (currentAngle + 2) % 360;
+                createSineUnitCircle();
+                createSineFunctionChart();
+                createCosineUnitCircle();
+                createCosineFunctionChart();
+                createComparisonChart();
+                sineAnimationId = requestAnimationFrame(animate);
+            }
+            animate();
+        }
+
+        function animateCosine() {
+            if (cosineAnimationId) {
+                cancelAnimationFrame(cosineAnimationId);
+                cosineAnimationId = null;
+                return;
+            }
+            
+            function animate() {
+                currentAngle = (currentAngle + 2) % 360;
+                createSineUnitCircle();
+                createSineFunctionChart();
+                createCosineUnitCircle();
+                createCosineFunctionChart();
+                createComparisonChart();
+                cosineAnimationId = requestAnimationFrame(animate);
+            }
+            animate();
+        }
+
+        function toggleSineComparison() {
+            showSineComparison = !showSineComparison;
+            createComparisonChart();
+        }
+
+        function toggleCosineComparison() {
+            showCosineComparison = !showCosineComparison;
+            createComparisonChart();
+        }
+
+        function resetComparison() {
+            currentAngle = 0;
+            createSineUnitCircle();
+            createSineFunctionChart();
+            createCosineUnitCircle();
+            createCosineFunctionChart();
+            createComparisonChart();
+        }
+
+        // 页面切换功能
+        function showPage(pageId) {
+            // 隐藏所有页面
+            const pages = document.querySelectorAll('.page');
+            pages.forEach(page => page.classList.remove('active'));
+            
+            // 移除所有按钮的激活状态
+            const buttons = document.querySelectorAll('.nav-button');
+            buttons.forEach(button => button.classList.remove('active'));
+            
+            // 显示选中的页面
+            document.getElementById(pageId).classList.add('active');
+            
+            // 激活对应的按钮
+            event.target.classList.add('active');
+            
+            // 如果是正余弦函数页面，确保图表正确显示
+            if (pageId === 'trigonometry') {
+                setTimeout(() => {
+                    Plotly.Plots.resize('sineUnitCircle');
+                    Plotly.Plots.resize('sineFunctionChart');
+                    Plotly.Plots.resize('cosineUnitCircle');
+                    Plotly.Plots.resize('cosineFunctionChart');
+                    Plotly.Plots.resize('comparisonChart');
+                }, 100);
+            }
+        }
+
+        // 角度滑块事件监听
+        document.getElementById('angle').addEventListener('input', function() {
+            currentAngle = parseInt(this.value);
+            document.getElementById('angleValue').textContent = currentAngle + '°';
+            createSineUnitCircle();
+            createSineFunctionChart();
+            createCosineUnitCircle();
+            createCosineFunctionChart();
+            createComparisonChart();
+        });
+
+        // 页面加载时初始化
+        window.addEventListener('load', initCharts);
+        
+        // 响应式调整
+        window.addEventListener('resize', function() {
+            // 只调整当前活动页面中的图表
+            const activePage = document.querySelector('.page.active');
+            if (activePage) {
+                const pageId = activePage.id;
+                switch (pageId) {
+                    case 'trigonometry':
+                        Plotly.Plots.resize('sineUnitCircle');
+                        Plotly.Plots.resize('sineFunctionChart');
+                        Plotly.Plots.resize('cosineUnitCircle');
+                        Plotly.Plots.resize('cosineFunctionChart');
+                        Plotly.Plots.resize('comparisonChart');
+                        break;
+                    case 'movie':
+                        Plotly.Plots.resize('movieChart');
+                        break;
+                    case 'alipay':
+                        Plotly.Plots.resize('alipayChart');
+                        break;
+                    case 'english':
+                        Plotly.Plots.resize('englishScoreChart');
+                        break;
+                    case 'bread':
+                        Plotly.Plots.resize('breadChart');
+                        break;
+                }
+            }
+        });
+    </script>
+</body>
+</html>
